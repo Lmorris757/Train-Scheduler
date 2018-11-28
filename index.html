@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+        crossorigin="anonymous">
+    <title>Document</title>
+
+</head>
+
+<body>
+    <div class="jumbotron jumbotron-fluid">
+        <div class="container">
+            <h1 class="display-4">Anytime is Train Time!</h1>
+            <p class="lead">Choo Choo Chee Chee</p>
+        </div>
+    </div>
+    <div class="container">
+        <table class="table bg-light">
+            <tr>
+
+                <th>Train Name</th>
+
+                <th>Destination</th>
+
+
+                <th>Frequency(min)</th>
+
+
+                <th>Next Arrival</th>
+
+
+                <th>Minutes Away</th>
+
+
+            </tr>
+
+
+        </table>
+
+        <form>
+            <div class="form-group">
+                <label for="train-name">Train Name</label>
+                <input type="text" class="form-control" id="trainName" aria-describedby="trainName" placeholder="Enter Train Name">
+            </div>
+
+            <div class="form-group">
+                <label for="destination">Destination</label>
+                <input type="text" class="form-control" id="destination" aria-describedby="destination" placeholder="Enter Destination">
+            </div>
+
+            <div class="form-group">
+                <label for="train-time">First Train Time (HH:mm - military time)</label>
+                <input type="text" class="form-control" id="trainTime" aria-describedby="trainTime" placeholder="Enter Train Time">
+            </div>
+
+            <div class="form-group">
+                <label for="frequency">Frequency (min)</label>
+                <input type="text" class="form-control" id="frequency" placeholder="frequency">
+            </div>
+
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+
+    <script src="https://code.jquery.com/jquery.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.5.8/firebase.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
+
+
+    <script>
+        var index = 0
+        // Initialize Firebase
+        var config = {
+            apiKey: "AIzaSyBUXCrCMEAxNWbs1n8Cq6HP1Lp8r5hDAqk",
+            authDomain: "bootcamp-firebase-project.firebaseapp.com",
+            databaseURL: "https://bootcamp-firebase-project.firebaseio.com",
+            projectId: "bootcamp-firebase-project",
+            storageBucket: "bootcamp-firebase-project.appspot.com",
+            messagingSenderId: "106704448987"
+        };
+        firebase.initializeApp(config);
+
+        var database = firebase.database();
+
+        $("#formId").on("submit", function (event) {
+            event.preventDefault();
+            var name = ("#trainName").val().trim();
+            var destination = ("#destination").val().trim();
+            var trainTime = ("#trainTime").val().trim();
+            var trainFrequency = ("#frequency").val().trim();
+
+            // Pushing to database
+            database.ref().push({
+                name: name,
+                destination: destination,
+                trainTime: trainTime,
+                trainFrequency: trainFrequency
+            });
+
+            $("#trainName").val("");
+            $("#destination").val("");
+            $("trainTime").val("");
+            $("#frequency").val("");
+
+            return false;
+        });
+        // Sending a snapshot to the database?
+        database.ref().orderByChild("dateAdded").on("child_added", function (childSnapshot) {
+
+            var updateButton = $("<button>").html("<span class='glyphicon glyphicon-edit'></span>").addClass("updateButton").attr("data-index", index).attr("data-key", childSnapshot.key);
+
+            var removeButton = $("<button>").html("<span class='glyphicon glyphicon-remove'></span>").addClass("removeButton").attr("data-index", index).attr("data-key", childSnapshot.key);
+
+            var trainName = ["Trenton Express", "Oregon Trail", "Midnight Carriage", "Sing Sing Caravan", "Boston Bus", "California Caravan", "Analben's Train"];
+            var destination = ["Trenton", "Salem Oregon", "Philidelphia", "Atlanta", "Boston", "San Francisco", "Florida"];
+
+            // Attempting to like... initialize momentjs
+            var currentTime = moment(12, "HH");
+            var firstTime = childSnapshot.val().firstTime;
+            var trainTime = childSnapshot.val().trainTime;
+            var frequency = parseInt(childSnapshot.val().frequency);
+            var firstTrain = moment("HH:mm", firstTime).subtract(1, "years");
+
+            // I am geting an invalid number return, and have nooo idea why.  I've read through the guides on the website, but still don't see what I'm doing wrong.
+            console.log(firstTrain);
+            console.log(trainTime);
+
+        //    I really haven't been able to see any functionality. I believe the error with moment is still giving me issues.
+            var currentTimeCalc = moment().subtract(1, "years");
+            var diffTime = moment().diff(moment(firstTrain), "minutes");
+            var remainder = diffTime % frequency;
+            var minutesRemaining = frequency - remainder;
+            var nextTRain = moment().add(minutesRemaining, "minutes").format("hh:mm A");
+            var beforeCalc = moment(firstTrain).diff(currentTimeCalc, "minutes");
+
+        });
+    </script>
+
+</body>
+
+
+
+
+</html>
